@@ -157,17 +157,41 @@ interface ThaiIdCardData {
 
 ---
 
+## 🌐 Browser Usage & Testing
+
+`@fixxyblogger/thai-smartcard-ts` is built with `platform: 'neutral'` and zero Node.js dependencies (`fs`, `buffer`, `events`, `process`), allowing it to run natively in browser environments (Vite, Next.js client components, webpack, or vanilla `<script type="module">`).
+
+### 1. Run the Local Browser Demo
+
+Test smart card reading with a realistic Thai National ID card UI directly in your browser:
+
+```bash
+npm run example:browser
+```
+
+Then open **[http://localhost:3000](http://localhost:3000)** in Chrome, Edge, or Firefox.
+
+The local demo supports:
+- **⚡ Live Hardware Mode**: Connects to your physical smart card reader (e.g. Zoweetek, ACR39U) via a local Node PC/SC bridge using Server-Sent Events (SSE). Insert your Thai ID card and watch it parse personal details and photo in real time!
+- **🧪 In-Browser Pure SDK Test**: Click *"Test Simulated Card in Browser"* to run `readThaiIdCard(mockTransport)` completely inside your browser's JavaScript engine (zero backend needed).
+- **🌐 Web Smart Card API**: Detects if your browser supports the experimental native `navigator.smartCard` API (`chrome://flags/#enable-web-smart-card`).
+
+---
+
 ## 🧪 Testing
 
 ```bash
-# Run unit tests
+# Run unit tests (includes browser compatibility tests)
 npm test
 
 # Run tests with v8 code coverage
 npm run test:coverage
 
-# Run live hardware reader demo
+# Run live hardware reader CLI demo
 npm run example:id
+
+# Run local browser interactive demo
+npm run example:browser
 
 # Full CI check (lint, typecheck, test, build, publint, attw)
 npm run ci

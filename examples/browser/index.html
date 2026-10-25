@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thai National ID Smartcard — Browser Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-base: #090D16;
+      --bg-surface: #111827;
+      --bg-card: rgba(17, 24, 39, 0.7);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-focus: rgba(56, 189, 248, 0.5);
+      
+      --accent-cyan: #06B6D4;
+      --accent-blue: #3B82F6;
+      --accent-emerald: #10B981;
+      --accent-amber: #F59E0B;
+      --accent-rose: #F43F5E;
+      
+      --text-main: #F8FAFC;
+      --text-muted: #94A3B8;
+      --text-dim: #64748B;
+      
+      --idcard-bg-start: #EBF4FF;
+      --idcard-bg-end: #CFE2FE;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-base);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(6, 182, 212, 0.12) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(59, 130, 246, 0.12) 0px, transparent 50%),
+        radial-gradient(at 50% 50%, rgba(16, 185, 129, 0.05) 0px, transparent 50%);
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', 'Sarabun', -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    header {
+      padding: 1.25rem 2rem;
+      border-bottom: 1px solid var(--border-subtle);
+      background: rgba(9, 13, 22, 0.8);
+      backdrop-filter: blur(12px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #0284C7, #06B6D4);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 20px rgba(6, 182, 212, 0.35);
+      font-size: 1.35rem;
+    }
+
+    .brand-text h1 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .brand-text p {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .tag {
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: rgba(56, 189, 248, 0.15);
+      color: #38BDF8;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 0.9rem;
+      background: rgba(17, 24, 39, 0.9);
+      border: 1px solid var(--border-subtle);
+      border-radius: 9999px;
+      font-size: 0.82rem;
+      font-weight: 500;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--text-dim);
+      transition: all 0.3s ease;
+    }
+
+    .status-dot.online {
+      background: var(--accent-emerald);
+      box-shadow: 0 0 10px var(--accent-emerald);
+    }
+
+    .status-dot.reading {
+      background: var(--accent-amber);
+      box-shadow: 0 0 10px var(--accent-amber);
+      animation: pulse 1s infinite alternate;
+    }
+
+    .status-dot.offline {
+      background: var(--accent-rose);
+    }
+
+    @keyframes pulse {
+      from { opacity: 0.4; }
+      to { opacity: 1; transform: scale(1.15); }
+    }
+
+    main {
+      flex: 1;
+      max-width: 1280px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem;
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 2.5rem;
+    }
+
+    @media (max-width: 960px) {
+      main {
+        grid-template-columns: 1fr;
+        padding: 1.5rem 1rem;
+      }
+    }
+
+    /* CARD PRESENTATION */
+    .card-stage {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .thai-card-wrap {
+      perspective: 1000px;
+    }
+
+    .thai-card {
+      width: 100%;
+      max-width: 540px;
+      aspect-ratio: 1.585 / 1;
+      background: linear-gradient(135deg, #F0F6FF 0%, #D8E7FD 50%, #BDD9FF 100%);
+      border-radius: 18px;
+      box-shadow: 
+        0 20px 40px -15px rgba(0, 0, 0, 0.6),
+        0 0 0 1px rgba(255, 255, 255, 0.4) inset,
+        0 1px 2px rgba(0, 0, 0, 0.1);
+      position: relative;
+      overflow: hidden;
+      padding: 1.35rem 1.5rem;
+      color: #0F172A;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .thai-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: 
+        radial-gradient(circle at 85% 15%, rgba(6, 182, 212, 0.15) 0%, transparent 60%),
+        repeating-linear-gradient(45deg, rgba(30, 64, 175, 0.02) 0px, rgba(30, 64, 175, 0.02) 2px, transparent 2px, transparent 8px);
+      pointer-events: none;
+    }
+
+    .thai-card.reading-active {
+      box-shadow: 
+        0 0 35px rgba(59, 130, 246, 0.4),
+        0 20px 40px -15px rgba(0, 0, 0, 0.6);
+      transform: translateY(-2px);
+    }
+
+    /* Scanner laser sweep */
+    .scanner-line {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #38BDF8, #60A5FA, transparent);
+      box-shadow: 0 0 15px #38BDF8;
+      display: none;
+      z-index: 20;
+    }
+
+    .reading-active .scanner-line {
+      display: block;
+      animation: scanSweep 1.6s ease-in-out infinite;
+    }
+
+    @keyframes scanSweep {
+      0% { top: 0%; opacity: 0.3; }
+      50% { top: 97%; opacity: 1; }
+      100% { top: 0%; opacity: 0.3; }
+    }
+
+    /* CARD HEADER */
+    .card-header-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 2px solid rgba(30, 64, 175, 0.25);
+      padding-bottom: 0.4rem;
+      position: relative;
+      z-index: 2;
+    }
+
+    .garuda-crest {
+      width: 32px;
+      height: 32px;
+    }
+
+    .card-title-text {
+      text-align: center;
+      flex: 1;
+    }
+
+    .card-title-text h2 {
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: #1E3A8A;
+      letter-spacing: -0.01em;
+      line-height: 1.2;
+    }
+
+    .card-title-text p {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #3B82F6;
+      letter-spacing: 0.02em;
+    }
+
+    /* CITIZEN ID ROW */
+    .card-cid-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 0.45rem;
+      z-index: 2;
+    }
+
+    .cid-label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: #475569;
+    }
+
+    .cid-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      color: #0F172A;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
+    }
+
+    /* CARD BODY (PHOTO + DETAILS) */
+    .card-body-grid {
+      display: grid;
+      grid-template-columns: 85px 1fr;
+      gap: 1rem;
+      margin-top: 0.5rem;
+      z-index: 2;
+    }
+
+    .card-left-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .smart-chip {
+      width: 48px;
+      height: 38px;
+      background: linear-gradient(135deg, #FDE68A 0%, #F59E0B 50%, #D97706 100%);
+      border-radius: 6px;
+      border: 1px solid #B45309;
+      position: relative;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 2px 4px rgba(0, 0, 0, 0.15);
+      overflow: hidden;
+    }
+
+    .chip-line-h {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: #78350F;
+    }
+
+    .chip-line-v1 {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 33%;
+      width: 1px;
+      background: #78350F;
+    }
+
+    .chip-line-v2 {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 66%;
+      width: 1px;
+      background: #78350F;
+    }
+
+    .chip-core {
+      position: absolute;
+      width: 16px;
+      height: 14px;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      border: 1px solid #78350F;
+      border-radius: 3px;
+      background: rgba(245, 158, 11, 0.3);
+    }
+
+    .photo-frame {
+      width: 82px;
+      height: 106px;
+      background: #E2E8F0;
+      border-radius: 6px;
+      border: 2px solid #CBD5E1;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .photo-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .photo-placeholder {
+      font-size: 2.2rem;
+      color: #94A3B8;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      width: 100%;
+    }
+
+    .card-fields-col {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      font-size: 0.72rem;
+    }
+
+    .field-row {
+      display: flex;
+      gap: 0.4rem;
+      line-height: 1.35;
+    }
+
+    .field-label {
+      color: #475569;
+      font-weight: 500;
+      min-width: 65px;
+      flex-shrink: 0;
+    }
+
+    .field-val {
+      font-weight: 600;
+      color: #0F172A;
+      word-break: break-word;
+    }
+
+    .field-val.highlight {
+      color: #1E3A8A;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .card-footer-dates {
+      display: flex;
+      justify-content: space-between;
+      border-top: 1px dashed rgba(30, 64, 175, 0.3);
+      padding-top: 0.35rem;
+      margin-top: 0.4rem;
+      font-size: 0.65rem;
+      color: #334155;
+      z-index: 2;
+    }
+
+    /* RIGHT COLUMN CONTROLS */
+    .controls-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .glass-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 1.5rem;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+    }
+
+    .glass-card h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .btn {
+      appearance: none;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding: 0.8rem 1.2rem;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #0284C7, #06B6D4);
+      color: #FFFFFF;
+      box-shadow: 0 4px 14px rgba(6, 182, 212, 0.35);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(6, 182, 212, 0.45);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-emerald {
+      background: linear-gradient(135deg, #059669, #10B981);
+      color: #FFFFFF;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-emerald:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    .reader-info-box {
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 0.85rem;
+      margin-bottom: 1rem;
+      font-size: 0.82rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .reader-info-row {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .reader-info-label {
+      color: var(--text-muted);
+    }
+
+    .reader-info-value {
+      font-weight: 600;
+      color: var(--text-main);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* JSON VIEWER */
+    .json-box {
+      background: #050811;
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 0.85rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      max-height: 240px;
+      overflow-y: auto;
+      color: #94A3B8;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    /* WEB SMART CARD API ACCORDION */
+    .feature-card {
+      border-left: 3px solid var(--accent-cyan);
+    }
+
+    .code-pill {
+      font-family: 'JetBrains Mono', monospace;
+      background: rgba(255, 255, 255, 0.08);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.78rem;
+      color: #38BDF8;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <div class="brand-icon">💳</div>
+      <div class="brand-text">
+        <h1>Thai Smartcard SDK <span class="tag">Browser Ready</span></h1>
+        <p>@fixxyblogger/thai-smartcard-ts • PC/SC APDU & TIS-620</p>
+      </div>
+    </div>
+
+    <div class="status-pill" id="globalStatusPill">
+      <div class="status-dot online" id="statusDot"></div>
+      <span id="statusText">Bridge Online</span>
+    </div>
+  </header>
+
+  <main>
+    <!-- LEFT: REALISTIC THAI NATIONAL ID CARD -->
+    <section class="card-stage">
+      <div class="thai-card-wrap">
+        <div class="thai-card" id="idCard">
+          <div class="scanner-line"></div>
+
+          <!-- Top header -->
+          <div class="card-header-inner">
+            <svg class="garuda-crest" viewBox="0 0 100 100">
+              <path fill="#B91C1C" d="M50 10 L60 30 L80 35 L65 50 L70 75 L50 65 L30 75 L35 50 L20 35 L40 30 Z"/>
+              <circle cx="50" cy="40" r="10" fill="#F59E0B"/>
+            </svg>
+            <div class="card-title-text">
+              <h2>บัตรประจำตัวประชาชน</h2>
+              <p>Thai National ID Card</p>
+            </div>
+            <div style="width: 32px;"></div>
+          </div>
+
+          <!-- Citizen ID -->
+          <div class="card-cid-row">
+            <span class="cid-label">เลขประจำตัวประชาชน<br>Identification Number</span>
+            <span class="cid-value" id="cardCid">_ ____ _____ __ _</span>
+          </div>
+
+          <!-- Body -->
+          <div class="card-body-grid">
+            <div class="card-left-col">
+              <div class="smart-chip">
+                <div class="chip-line-h"></div>
+                <div class="chip-line-v1"></div>
+                <div class="chip-line-v2"></div>
+                <div class="chip-core"></div>
+              </div>
+              <div class="photo-frame" id="photoFrame">
+                <div class="photo-placeholder" id="photoPlaceholder">👤</div>
+                <img id="cardPhoto" src="" alt="Thai ID Photo" style="display: none;">
+              </div>
+            </div>
+
+            <div class="card-fields-col">
+              <div class="field-row">
+                <span class="field-label">ชื่อตัวและสกุล</span>
+                <span class="field-val highlight" id="cardNameTh">-</span>
+              </div>
+              <div class="field-row">
+                <span class="field-label">Name</span>
+                <span class="field-val" id="cardNameEn">-</span>
+              </div>
+              <div class="field-row">
+                <span class="field-label">เกิดวันที่</span>
+                <span class="field-val" id="cardDob">-</span>
+              </div>
+              <div class="field-row">
+                <span class="field-label">เพศ</span>
+                <span class="field-val" id="cardGender">-</span>
+              </div>
+              <div class="field-row">
+                <span class="field-label">ที่อยู่</span>
+                <span class="field-val" id="cardAddress" style="font-size: 0.68rem;">-</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Footer Dates -->
+          <div class="card-footer-dates">
+            <div>
+              <strong>วันออกบัตร:</strong> <span id="cardIssueDate">-</span>
+            </div>
+            <div>
+              <strong>วันหมดอายุ:</strong> <span id="cardExpireDate">-</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- JSON DATA INSPECTOR -->
+      <div class="glass-card">
+        <h3>
+          <span>Parsed Card Data (JSON)</span>
+          <button class="btn btn-secondary" id="copyJsonBtn" style="padding: 0.35rem 0.75rem; font-size: 0.75rem;">📋 Copy</button>
+        </h3>
+        <pre class="json-box" id="jsonBox">// Insert a physical Thai ID card or click "Test Simulated Card" below</pre>
+      </div>
+    </section>
+
+    <!-- RIGHT: CONTROLS & BROWSER INTEGRATION TEST -->
+    <section class="controls-panel">
+      <!-- HARDWARE STATUS CARD -->
+      <div class="glass-card">
+        <h3>⚡ Real PC/SC Hardware Reader</h3>
+        
+        <div class="reader-info-box">
+          <div class="reader-info-row">
+            <span class="reader-info-label">Reader:</span>
+            <span class="reader-info-value" id="readerNameVal">Detecting...</span>
+          </div>
+          <div class="reader-info-row">
+            <span class="reader-info-label">Card State:</span>
+            <span class="reader-info-value" id="cardStateVal">Waiting for card...</span>
+          </div>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-primary" id="readHardwareBtn">
+            <span>💳</span> Read Inserted Card Now
+          </button>
+        </div>
+      </div>
+
+      <!-- CLIENT-SIDE BROWSER SIMULATION -->
+      <div class="glass-card feature-card">
+        <h3>🧪 In-Browser Pure SDK Test</h3>
+        <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1rem; line-height: 1.5;">
+          Executes <span class="code-pill">readThaiIdCard()</span> directly inside your browser window using <span class="code-pill">/dist/index.mjs</span>. Tests TIS-620 Thai decoding, check digit, and photo without any Node.js backend.
+        </p>
+
+        <div class="btn-group">
+          <button class="btn btn-emerald" id="runBrowserMockBtn">
+            <span>⚡</span> Test Simulated Card in Browser
+          </button>
+          <button class="btn btn-secondary" id="randomizeMockBtn">
+            <span>🎲</span> Randomize Card Profile (Male / Female / Lifetime)
+          </button>
+        </div>
+      </div>
+
+      <!-- WEB SMART CARD API STATUS -->
+      <div class="glass-card">
+        <h3>🌐 Web Smart Card API</h3>
+        <div id="webSmartCardStatus" style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.5;">
+          Checking browser <span class="code-pill">navigator.smartCard</span> support...
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ES MODULE IMPORT TEST -->
+  <script type="module">
+    import {
+      readThaiIdCard,
+      photoToDataUrl,
+      isValidCitizenId,
+      formatCitizenId,
+      encodeTis620,
+      decodeTis620,
+      THAI_ID_FIELDS,
+      concatBytes
+    } from '/dist/index.mjs';
+
+    console.log('✅ @fixxyblogger/thai-smartcard-ts loaded successfully into browser window!');
+
+    // DOM Elements
+    const idCard = document.getElementById('idCard');
+    const statusDot = document.getElementById('statusDot');
+    const statusText = document.getElementById('statusText');
+    const readerNameVal = document.getElementById('readerNameVal');
+    const cardStateVal = document.getElementById('cardStateVal');
+    const cardCid = document.getElementById('cardCid');
+    const cardNameTh = document.getElementById('cardNameTh');
+    const cardNameEn = document.getElementById('cardNameEn');
+    const cardDob = document.getElementById('cardDob');
+    const cardGender = document.getElementById('cardGender');
+    const cardAddress = document.getElementById('cardAddress');
+    const cardIssueDate = document.getElementById('cardIssueDate');
+    const cardExpireDate = document.getElementById('cardExpireDate');
+    const cardPhoto = document.getElementById('cardPhoto');
+    const photoPlaceholder = document.getElementById('photoPlaceholder');
+    const jsonBox = document.getElementById('jsonBox');
+    const copyJsonBtn = document.getElementById('copyJsonBtn');
+    const readHardwareBtn = document.getElementById('readHardwareBtn');
+    const runBrowserMockBtn = document.getElementById('runBrowserMockBtn');
+    const randomizeMockBtn = document.getElementById('randomizeMockBtn');
+    const webSmartCardStatus = document.getElementById('webSmartCardStatus');
+
+    let currentJsonData = null;
+
+    // Check Web Smart Card API
+    if ('smartCard' in navigator) {
+      webSmartCardStatus.innerHTML = `
+        <span style="color: var(--accent-emerald); font-weight: 600;">✓ Supported natively in this browser!</span>
+        <p style="margin-top: 0.4rem;">Direct USB smart card reader access is supported via <span class="code-pill">navigator.smartCard</span>.</p>
+      `;
+    } else {
+      webSmartCardStatus.innerHTML = `
+        <span style="color: var(--accent-amber); font-weight: 600;">ℹ Standard Browser Mode (via Local Bridge)</span>
+        <p style="margin-top: 0.4rem;">To test native Chrome Web Smart Card API, enable <span class="code-pill">chrome://flags/#enable-web-smart-card</span>.</p>
+      `;
+    }
+
+    function renderCard(data) {
+      currentJsonData = data;
+      jsonBox.textContent = JSON.stringify(data, null, 2);
+
+      cardCid.textContent = formatCitizenId(data.citizenId);
+      cardNameTh.textContent = data.nameTh.full;
+      cardNameEn.textContent = data.nameEn.full;
+      
+      const dobTh = data.dateOfBirth?.raw ? `B.E. ${data.dateOfBirth.raw.slice(0, 4)}` : '';
+      cardDob.textContent = `${data.dateOfBirth?.iso || '-'} (${dobTh})`;
+      cardGender.textContent = data.gender === 'male' ? 'ชาย (Male)' : data.gender === 'female' ? 'หญิง (Female)' : 'Unknown';
+      cardAddress.textContent = data.address?.full || '-';
+
+      cardIssueDate.textContent = data.issueDate?.iso || '-';
+      cardExpireDate.textContent = data.expireDate?.lifetime ? 'ตลอดชีพ (Lifetime)' : (data.expireDate?.iso || '-');
+
+      if (data.photoUrl) {
+        cardPhoto.src = data.photoUrl;
+        cardPhoto.style.display = 'block';
+        photoPlaceholder.style.display = 'none';
+      } else {
+        cardPhoto.style.display = 'none';
+        photoPlaceholder.style.display = 'flex';
+      }
+
+      idCard.classList.remove('reading-active');
+    }
+
+    function setReadingState(active, label = 'Reading Card...') {
+      if (active) {
+        idCard.classList.add('reading-active');
+        statusDot.className = 'status-dot reading';
+        statusText.textContent = label;
+        cardStateVal.textContent = label;
+      } else {
+        idCard.classList.remove('reading-active');
+        statusDot.className = 'status-dot online';
+        statusText.textContent = 'Ready';
+        cardStateVal.textContent = 'Card ready';
+      }
+    }
+
+    // Connect Server-Sent Events (SSE) to local Node bridge
+    function connectSse() {
+      const evtSource = new EventSource('/api/events');
+
+      evtSource.addEventListener('init', (e) => {
+        const payload = JSON.parse(e.data);
+        if (payload.readers && payload.readers.length > 0) {
+          readerNameVal.textContent = payload.readers[0];
+          readerNameVal.style.color = '#38BDF8';
+        } else {
+          readerNameVal.textContent = 'No reader detected';
+          readerNameVal.style.color = 'var(--text-dim)';
+        }
+        if (payload.latestCardData) {
+          renderCard(payload.latestCardData);
+        }
+      });
+
+      evtSource.addEventListener('reader', (e) => {
+        const { reader } = JSON.parse(e.data);
+        readerNameVal.textContent = reader;
+        readerNameVal.style.color = '#38BDF8';
+      });
+
+      evtSource.addEventListener('reader-removed', (e) => {
+        readerNameVal.textContent = 'Reader disconnected';
+        readerNameVal.style.color = 'var(--accent-rose)';
+      });
+
+      evtSource.addEventListener('card-inserted', (e) => {
+        setReadingState(true, 'Card Inserted — Reading...');
+      });
+
+      evtSource.addEventListener('card-removed', (e) => {
+        setReadingState(false);
+        cardStateVal.textContent = 'Card removed';
+      });
+
+      evtSource.addEventListener('card-data', (e) => {
+        const { data } = JSON.parse(e.data);
+        renderCard(data);
+        setReadingState(false);
+      });
+
+      evtSource.addEventListener('error', (e) => {
+        try {
+          const { message } = JSON.parse(e.data);
+          cardStateVal.textContent = `Error: ${message}`;
+        } catch {
+          // SSE connection error
+          statusDot.className = 'status-dot offline';
+          statusText.textContent = 'Bridge Disconnected';
+        }
+      });
+    }
+
+    connectSse();
+
+    // Trigger manual hardware read
+    readHardwareBtn.addEventListener('click', async () => {
+      setReadingState(true, 'Triggering Reader...');
+      try {
+        const res = await fetch('/api/read', { method: 'POST' });
+        const result = await res.json();
+        if (result.error) {
+          alert('Hardware Read Error: ' + result.error);
+          setReadingState(false);
+        }
+      } catch (err) {
+        alert('Network Error: ' + err.message);
+        setReadingState(false);
+      }
+    });
+
+    // Copy JSON
+    copyJsonBtn.addEventListener('click', () => {
+      if (!currentJsonData) return;
+      navigator.clipboard.writeText(JSON.stringify(currentJsonData, null, 2));
+      copyJsonBtn.textContent = '✓ Copied!';
+      setTimeout(() => (copyJsonBtn.textContent = '📋 Copy'), 2000);
+    });
+
+    // Browser Mock Test with Real APDU Simulation
+    const MOCK_PROFILES = [
+      {
+        cid: '1100100000018',
+        nameTh: 'นาย#สมชาย##ใจดี',
+        nameEn: 'Mr.#Somchai##Jaidee',
+        dob: '25300115',
+        gender: '1',
+        issuer: 'สำนักทะเบียนกลาง',
+        issue: '25600510',
+        expire: '25700114',
+        address: '123/45#หมู่ที่ 1#ตรอกร่วมใจ#ซอยสุขุมวิท 21#ถนนสุขุมวิth#คลองเตยเหนือ#วัฒนา#กรุงเทพมหานคร'
+      },
+      {
+        cid: '3100600123456',
+        nameTh: 'นางสาว#ศิริพร##พรประสิทธิ์',
+        nameEn: 'Miss#Siriporn##Pornprasit',
+        dob: '25380924',
+        gender: '2',
+        issuer: 'สำนักทะเบียนท้องถิ่นเทศบาลนครเชียงใหม่',
+        issue: '25640315',
+        expire: '99999999', // Lifetime
+        address: '88/2#หมู่ที่ 5###ถนนนิมมานเหมินท์#สุเทพ#เมืองเชียงใหม่#เชียงใหม่'
+      }
+    ];
+
+    let mockIndex = 0;
+
+    async function runBrowserMock() {
+      setReadingState(true, 'Simulating Card APDU in Browser...');
+      
+      const profile = MOCK_PROFILES[mockIndex % MOCK_PROFILES.length];
+
+      // Build simulated responses map
+      const responses = new Map();
+      responses.set(THAI_ID_FIELDS.citizenId.offset, encodeTis620(profile.cid));
+      responses.set(THAI_ID_FIELDS.nameTh.offset, encodeTis620(profile.nameTh));
+      responses.set(THAI_ID_FIELDS.nameEn.offset, encodeTis620(profile.nameEn));
+      responses.set(THAI_ID_FIELDS.dateOfBirth.offset, encodeTis620(profile.dob));
+      responses.set(THAI_ID_FIELDS.gender.offset, encodeTis620(profile.gender));
+      responses.set(THAI_ID_FIELDS.issuer.offset, encodeTis620(profile.issuer));
+      responses.set(THAI_ID_FIELDS.issueDate.offset, encodeTis620(profile.issue));
+      responses.set(THAI_ID_FIELDS.expireDate.offset, encodeTis620(profile.expire));
+      responses.set(THAI_ID_FIELDS.address.offset, encodeTis620(profile.address));
+
+      // Mock JPEG photo bytes
+      const sampleJpeg = Uint8Array.of(
+        0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01, 0x01, 0x00,
+        0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0xff, 0xd9
+      );
+
+      // In-browser mock transport
+      const mockTransport = {
+        transmit: async (cmd) => {
+          // Artificial 25ms delay to simulate APDU timing
+          await new Promise(r => setTimeout(r, 25));
+
+          // SELECT DF
+          if (cmd[0] === 0x00 && cmd[1] === 0xa4) {
+            return Uint8Array.of(0x90, 0x00);
+          }
+          // READ BINARY
+          if (cmd[0] === 0x80 && cmd[1] === 0xb0) {
+            const offset = (cmd[2] << 8) | cmd[3];
+            if (offset === 0x017b) {
+              return concatBytes([sampleJpeg, Uint8Array.of(0x90, 0x00)]);
+            }
+            const data = responses.get(offset) ?? new Uint8Array(0);
+            return concatBytes([data, Uint8Array.of(0x90, 0x00)]);
+          }
+          return Uint8Array.of(0x6a, 0x82);
+        }
+      };
+
+      // Pure in-browser execution!
+      const data = await readThaiIdCard(mockTransport, { photo: true });
+      const photoUrl = data.photo ? photoToDataUrl(data.photo) : null;
+
+      renderCard({
+        ...data,
+        photoUrl,
+        photo: undefined
+      });
+
+      cardStateVal.textContent = 'Simulated in Browser!';
+    }
+
+    runBrowserMockBtn.addEventListener('click', runBrowserMock);
+
+    randomizeMockBtn.addEventListener('click', () => {
+      mockIndex++;
+      runBrowserMock();
+    });
+  </script>
+</body>
+</html>

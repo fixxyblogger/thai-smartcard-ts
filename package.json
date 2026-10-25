@@ -80,6 +80,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "example:id": "tsx examples/read-id-card.ts",
+    "example:browser": "tsx examples/browser/server.ts",
     "check:package": "publint && attw --pack . --profile node16",
     "ci": "npm run lint && npm run typecheck && npm run test && npm run build && npm run check:package",
     "changeset": "changeset",
