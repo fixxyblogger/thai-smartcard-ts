@@ -28,6 +28,7 @@
   "sideEffects": false,
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
+  "browser": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
   "exports": {
     ".": {
@@ -35,6 +36,7 @@
         "import": "./dist/index.d.mts",
         "require": "./dist/index.d.cts"
       },
+      "browser": "./dist/index.mjs",
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
     },
