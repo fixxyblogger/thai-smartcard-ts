@@ -1,0 +1,102 @@
+{
+  "name": "thai-smartcard-ts",
+  "version": "0.1.0",
+  "description": "TypeScript SDK for reading Thai National ID Cards (PC/SC APDU & JPEG photo) in Node.js.",
+  "keywords": [
+    "thai",
+    "thailand",
+    "id-card",
+    "national-id",
+    "smartcard",
+    "smart-card",
+    "pcsc",
+    "apdu",
+    "tis-620",
+    "บัตรประชาชน"
+  ],
+  "homepage": "https://github.com/fixxyblogger/thai-smartcard-ts#readme",
+  "bugs": {
+    "url": "https://github.com/fixxyblogger/thai-smartcard-ts/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fixxyblogger/thai-smartcard-ts.git"
+  },
+  "license": "MIT",
+  "author": "fixxyblogger",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "types": {
+        "import": "./dist/index.d.mts",
+        "require": "./dist/index.d.cts"
+      },
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
+    "./pcsc": {
+      "types": {
+        "import": "./dist/pcsc.d.mts",
+        "require": "./dist/pcsc.d.cts"
+      },
+      "import": "./dist/pcsc.mjs",
+      "require": "./dist/pcsc.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "peerDependencies": {
+    "pcsc-mini": ">=0.1.0"
+  },
+  "peerDependenciesMeta": {
+    "pcsc-mini": {
+      "optional": true
+    }
+  },
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "example:id": "tsx examples/read-id-card.ts",
+    "check:package": "publint && attw --pack . --profile node16",
+    "ci": "npm run lint && npm run typecheck && npm run test && npm run build && npm run check:package",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "npm run build && changeset publish",
+    "prepublishOnly": "npm run ci"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
+    "@biomejs/biome": "^2.6.3",
+    "@changesets/cli": "^3.0.3",
+    "@types/node": "^26.6.5",
+    "@vitest/coverage-v8": "^5.0.5",
+    "pcsc-mini": "^0.1.3",
+    "publint": "^0.3.25",
+    "tsdown": "^0.23.2",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
+  }
+}
