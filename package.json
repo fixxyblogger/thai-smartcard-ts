@@ -81,8 +81,7 @@
     "check:package": "publint && attw --pack . --profile node16",
     "ci": "npm run lint && npm run typecheck && npm run test && npm run build && npm run check:package",
     "changeset": "changeset",
-    "version-packages": "changeset version",
-    "release": "npm run build && changeset publish",
+    "release": "npm publish --access public",
     "prepublishOnly": "npm run ci"
   },
   "devDependencies": {
