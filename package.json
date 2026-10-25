@@ -1,5 +1,5 @@
 {
-  "name": "thai-smartcard-ts",
+  "name": "@fixxyblogger/thai-smartcard-ts",
   "version": "0.1.0",
   "description": "TypeScript SDK for reading Thai National ID Cards (PC/SC APDU & JPEG photo) in Node.js.",
   "keywords": [
