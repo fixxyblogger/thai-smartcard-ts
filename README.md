@@ -1,7 +1,6 @@
 # thai-smartcard-ts 🇹🇭💳
 
 [![npm version](https://img.shields.io/npm/v/thai-smartcard-ts.svg?style=flat-square&color=007acc)](https://www.npmjs.com/package/thai-smartcard-ts)
-[![CI](https://img.shields.io/github/actions/workflow/status/fixxyblogger/thai-smartcard-ts/ci.yml?branch=main&style=flat-square)](https://github.com/fixxyblogger/thai-smartcard-ts/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 [![Dual ESM/CJS](https://img.shields.io/badge/module-ESM%20%2B%20CJS-brightgreen?style=flat-square)](https://github.com/fixxyblogger/thai-smartcard-ts)

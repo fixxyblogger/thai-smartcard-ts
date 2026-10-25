@@ -57,8 +57,7 @@
     "node": ">=18"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   },
   "peerDependencies": {
     "pcsc-mini": ">=0.1.0"
